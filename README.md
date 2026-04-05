@@ -18,10 +18,10 @@ Built for:
 
 | Game Mechanic | Data Structure | Complexity Highlight |
 |---|---|---|
-| 3D arena spatial partitioning + AoE hit detection | **Octree** |  O(log n + k) sphere queries |
-| Spell casting via hand gesture sequences | **Trie** |  | O(L) spell recognition |
-| Enemy threat scoring + auto-targeting | **Fibonacci Heap** |  O(1) amortized decrease-key |
-| Spell cooldown queue management | **Skip List** |  O(log n) insertion |
+| 3D arena spatial partitioning + AoE hit detection | **Octree** | O(log n + k) sphere queries |
+| Spell casting via hand gesture sequences | **Trie** | O(L) spell recognition |
+| Enemy threat scoring + auto-targeting | **Fibonacci Heap** | O(1) amortized decrease-key |
+| Spell cooldown queue management | **Skip List** | O(log n) expected insert; O(1) peek-min |
 
 ---
 
