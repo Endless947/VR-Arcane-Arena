@@ -13,6 +13,9 @@ namespace VRArcaneArena.UI
         private const float HoldDurationSeconds = 5f;
         private const KeyCode LeftTestKey = KeyCode.L;
         private const KeyCode RightTestKey = KeyCode.K;
+        private static readonly Vector3 HudLocalPosition = new Vector3(0f, 0.14f, 1.35f);
+        private static readonly Vector3 HudLocalRotationEuler = new Vector3(-1f, 0f, 0f);
+        private static readonly Vector3 HudLocalScale = new Vector3(0.0011f, 0.0011f, 0.0011f);
 
         private Text _waveLabel;
         private Text _scoreLabel;
@@ -35,18 +38,29 @@ namespace VRArcaneArena.UI
             canvasObject.transform.SetParent(cam.transform, false);
             var canvas = canvasObject.GetComponent<Canvas>();
             canvas.renderMode = RenderMode.WorldSpace;
+            canvas.overrideSorting = true;
+            canvas.sortingOrder = 500;
 
             var canvasRect = canvasObject.GetComponent<RectTransform>();
-            canvasRect.sizeDelta = new Vector2(1200f, 80f);
+            canvasRect.sizeDelta = new Vector2(1500f, 900f);
 
-            canvasObject.transform.localPosition = new Vector3(0f, 0.3f, 1.2f);
-            canvasObject.transform.localRotation = Quaternion.identity;
-            canvasObject.transform.localScale = new Vector3(0.001f, 0.001f, 0.001f);
+            canvasObject.transform.localPosition = HudLocalPosition;
+            canvasObject.transform.localRotation = Quaternion.Euler(HudLocalRotationEuler);
+            canvasObject.transform.localScale = HudLocalScale;
 
             var scaler = canvasObject.GetComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
 
             var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+
+            CreateImage(
+                "TopHudBand",
+                canvasObject.transform,
+                new Color(0f, 0f, 0f, 0.45f),
+                new Vector2(0.5f, 1f),
+                new Vector2(0.5f, 1f),
+                new Vector2(0f, 30f),
+                new Vector2(1460f, 56f));
 
             CreateImage(
                 "WaveLabelBackground",
@@ -167,6 +181,15 @@ namespace VRArcaneArena.UI
                 new Vector2(700f, 70f));
 
             _startButtonPanel = CreateActionButtonPanel(canvasObject.transform, "StartButtonPanel", "START GAME");
+            var startPanelCanvas = _startButtonPanel.GetComponent<Canvas>();
+            if (startPanelCanvas == null)
+            {
+                startPanelCanvas = _startButtonPanel.AddComponent<Canvas>();
+                _startButtonPanel.AddComponent<GraphicRaycaster>();
+            }
+
+            startPanelCanvas.overrideSorting = true;
+            startPanelCanvas.sortingOrder = 600;
             _startButtonHintText = CreateText(
                 "StartButtonHint",
                 _startButtonPanel.transform,
@@ -193,6 +216,10 @@ namespace VRArcaneArena.UI
                 if (_startButtonPanel != null)
                 {
                     _startButtonPanel.SetActive(waitingForStart);
+                    if (waitingForStart)
+                    {
+                        _startButtonPanel.transform.SetAsLastSibling();
+                    }
                 }
 
                 if (waitingForStart)

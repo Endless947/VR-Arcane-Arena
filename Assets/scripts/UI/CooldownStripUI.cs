@@ -37,37 +37,67 @@ namespace VRArcaneArena.UI
             var panelObject = new GameObject("CooldownStripPanel", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
             var cam = Camera.main;
             panelObject.transform.SetParent(cam.transform, false);
-            panelObject.transform.localPosition = new Vector3(0.55f, -0.15f, 1.2f);
-            panelObject.transform.localRotation = Quaternion.identity;
-            panelObject.transform.localScale = new Vector3(0.001f, 0.001f, 0.001f);
+            panelObject.transform.localPosition = new Vector3(0.52f, -0.02f, 1.24f);
+            panelObject.transform.localRotation = Quaternion.Euler(0f, 18f, 0f);
+            panelObject.transform.localScale = new Vector3(0.0012f, 0.0012f, 0.0012f);
 
             var canvas = panelObject.GetComponent<Canvas>();
             canvas.renderMode = RenderMode.WorldSpace;
 
             var canvasRect = panelObject.GetComponent<RectTransform>();
-            canvasRect.sizeDelta = new Vector2(300f, 200f);
+            canvasRect.sizeDelta = new Vector2(460f, 300f);
 
             var scaler = panelObject.GetComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
 
             var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
 
-            const float rowHeight = 20f;
-            const float rowPadding = 5f;
-            const float labelWidth = 100f;
-            const float barWidth = 190f;
-            const float topY = 90f;
+            var panelBackgroundObject = new GameObject("CooldownBackground", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            panelBackgroundObject.transform.SetParent(panelObject.transform, false);
+            var panelBackgroundRect = panelBackgroundObject.GetComponent<RectTransform>();
+            panelBackgroundRect.anchorMin = new Vector2(0.5f, 0.5f);
+            panelBackgroundRect.anchorMax = new Vector2(0.5f, 0.5f);
+            panelBackgroundRect.pivot = new Vector2(0.5f, 0.5f);
+            panelBackgroundRect.anchoredPosition = Vector2.zero;
+            panelBackgroundRect.sizeDelta = new Vector2(440f, 286f);
+
+            var panelBackgroundImage = panelBackgroundObject.GetComponent<Image>();
+            panelBackgroundImage.color = new Color(0f, 0f, 0f, 0.58f);
+            panelBackgroundImage.raycastTarget = false;
+
+            var titleObject = new GameObject("CooldownTitle", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+            titleObject.transform.SetParent(panelObject.transform, false);
+            var titleRect = titleObject.GetComponent<RectTransform>();
+            titleRect.anchorMin = new Vector2(0.5f, 0.5f);
+            titleRect.anchorMax = new Vector2(0.5f, 0.5f);
+            titleRect.pivot = new Vector2(0.5f, 0.5f);
+            titleRect.anchoredPosition = new Vector2(0f, 124f);
+            titleRect.sizeDelta = new Vector2(390f, 24f);
+
+            var titleText = titleObject.GetComponent<Text>();
+            titleText.font = font;
+            titleText.fontSize = 18;
+            titleText.alignment = TextAnchor.MiddleCenter;
+            titleText.text = "SPELL COOLDOWNS";
+            titleText.color = new Color(1f, 0.92f, 0.6f, 1f);
+            titleText.raycastTarget = false;
+
+            const float rowHeight = 22f;
+            const float rowPadding = 7f;
+            const float labelWidth = 145f;
+            const float barWidth = 242f;
+            const float topY = 88f;
 
             var spellRows = new[]
             {
                 new { Display = "Fireball", Key = "Fireball", Cooldown = 3f, Color = new Color(1f, 0.4f, 0f) },
                 new { Display = "Blizzard", Key = "Blizzard", Cooldown = 8f, Color = Color.cyan },
-                new { Display = "LightningBolt", Key = "Lightning Bolt", Cooldown = 5f, Color = Color.yellow },
-                new { Display = "ArcaneShield", Key = "Arcane Shield", Cooldown = 10f, Color = Color.white },
-                new { Display = "MeteorStrike", Key = "Meteor Strike", Cooldown = 20f, Color = Color.red },
-                new { Display = "GravityWell", Key = "Gravity Well", Cooldown = 12f, Color = Color.magenta },
-                new { Display = "FrostNova", Key = "Frost Nova", Cooldown = 6f, Color = new Color(0.5f, 0.8f, 1f) },
-                new { Display = "VoidBlast", Key = "Void Blast", Cooldown = 15f, Color = new Color(0.4f, 0f, 0.6f) }
+                new { Display = "Lightning Bolt", Key = "Lightning Bolt", Cooldown = 5f, Color = Color.yellow },
+                new { Display = "Arcane Shield", Key = "Arcane Shield", Cooldown = 10f, Color = Color.white },
+                new { Display = "Meteor Strike", Key = "Meteor Strike", Cooldown = 20f, Color = Color.red },
+                new { Display = "Gravity Well", Key = "Gravity Well", Cooldown = 12f, Color = Color.magenta },
+                new { Display = "Frost Nova", Key = "Frost Nova", Cooldown = 6f, Color = new Color(0.5f, 0.8f, 1f) },
+                new { Display = "Void Blast", Key = "Void Blast", Cooldown = 15f, Color = new Color(0.4f, 0f, 0.6f) }
             };
 
             for (var i = 0; i < spellRows.Length; i++)
@@ -80,12 +110,12 @@ namespace VRArcaneArena.UI
                 labelRect.anchorMin = new Vector2(0.5f, 0.5f);
                 labelRect.anchorMax = new Vector2(0.5f, 0.5f);
                 labelRect.pivot = new Vector2(0f, 0.5f);
-                labelRect.anchoredPosition = new Vector2(-145f, rowY);
+                labelRect.anchoredPosition = new Vector2(-212f, rowY);
                 labelRect.sizeDelta = new Vector2(labelWidth, rowHeight);
 
                 var labelText = labelObject.GetComponent<Text>();
                 labelText.font = font;
-                labelText.fontSize = 14;
+                labelText.fontSize = 15;
                 labelText.alignment = TextAnchor.MiddleLeft;
                 labelText.text = spellRows[i].Display;
                 labelText.color = new Color(0.9f, 0.9f, 0.9f, 1f);
@@ -97,7 +127,7 @@ namespace VRArcaneArena.UI
                 barBackgroundRect.anchorMin = new Vector2(0.5f, 0.5f);
                 barBackgroundRect.anchorMax = new Vector2(0.5f, 0.5f);
                 barBackgroundRect.pivot = new Vector2(0f, 0.5f);
-                barBackgroundRect.anchoredPosition = new Vector2(-40f, rowY);
+                barBackgroundRect.anchoredPosition = new Vector2(-58f, rowY);
                 barBackgroundRect.sizeDelta = new Vector2(barWidth, rowHeight);
 
                 var backgroundImage = barBackgroundObject.GetComponent<Image>();
