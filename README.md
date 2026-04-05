@@ -23,12 +23,12 @@ Most game projects use data structures invisibly in the background. VR Arcane Ar
 
 ## Four Data Structures
 
-| Data Structure | Game Mechanic | Syllabus Unit | Complexity |
-|---|---|---|---|
-| **Octree** | 3D arena spatial partitioning + AoE spell hit detection | Unit 5 | O(log n + k) sphere queries |
-| **Trie / DAWG** | Spell casting via controller token sequences | Unit 3 | O(L) spell recognition |
-| **Fibonacci Heap** | Enemy threat scoring + auto-prioritization + targeting | Unit 2 | O(1) amortized decrease-key |
-| **Skip List** | Spell cooldown queue management | Unit 4 | O(log n) insertion |
+| Data Structure | Game Mechanic |
+|---|---|
+| **Octree** | 3D arena spatial partitioning + AoE spell hit detection |
+| **Trie / DAWG** | Spell casting via controller token sequences |
+| **Fibonacci Heap** | Enemy threat scoring + auto-prioritization + targeting |
+| **Skip List** | Spell cooldown queue management |
 
 ---
 
