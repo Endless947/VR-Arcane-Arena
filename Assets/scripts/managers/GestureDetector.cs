@@ -1,28 +1,26 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.XR.Hands;
+using UnityEngine.XR;
 using VRArcaneArena.DataStructures;
 
 namespace VRArcaneArena.Managers
 {
     /// <summary>
-    /// Converts held hand poses to gesture tokens and resolves spells through a trie.
-    /// Uses XR Hands subsystem (OpenXR) — NOT OVRHand.
+    /// Converts controller button presses to gesture tokens and resolves spells through a trie.
     /// </summary>
     public sealed class GestureDetector : MonoBehaviour
     {
         public SpellTrie spellTrie;
-        public float poseHoldDuration = 0.3f;
 
         public UnityEvent<string> onSpellCast;
         public UnityEvent onInvalidGesture;
         public UnityEvent<List<string>> onReachableSpellsUpdated;
 
-        private XRHandSubsystem _handSubsystem;
-        private string _currentPose;
-        private float _poseHoldTimer;
-        private string _lastFiredPose;
+        private bool _prevA;
+        private bool _prevB;
+        private bool _prevX;
+        private bool _prevY;
 
         public void Awake()
         {
@@ -32,21 +30,6 @@ namespace VRArcaneArena.Managers
             if (onSpellCast == null)           onSpellCast = new UnityEvent<string>();
             if (onInvalidGesture == null)      onInvalidGesture = new UnityEvent();
             if (onReachableSpellsUpdated == null) onReachableSpellsUpdated = new UnityEvent<List<string>>();
-
-            _currentPose = string.Empty;
-            _lastFiredPose = string.Empty;
-            _poseHoldTimer = 0f;
-        }
-
-        public void Start()
-        {
-            // Get XR Hands subsystem — works with OpenXR on Quest 2
-            var subsystems = new List<XRHandSubsystem>();
-            SubsystemManager.GetSubsystems(subsystems);
-            if (subsystems.Count > 0)
-                _handSubsystem = subsystems[0];
-            else
-                Debug.LogWarning("GestureDetector: XRHandSubsystem not found. Keyboard fallback active.");
         }
 
         public void Update()
@@ -61,35 +44,28 @@ namespace VRArcaneArena.Managers
             if (Input.GetKeyDown(KeyCode.Alpha6))     { onSpellCast.Invoke("Frost Nova");      return; }
             if (Input.GetKeyDown(KeyCode.Alpha7))     { onSpellCast.Invoke("Void Blast");      return; }
 
-            if (_handSubsystem == null || !_handSubsystem.running) return;
+            var rightController = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
+            var leftController = InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);
 
-            var detectedPose = DetectCurrentPose();
+            bool currentA = false;
+            bool currentB = false;
+            bool currentX = false;
+            bool currentY = false;
 
-            if (string.IsNullOrEmpty(detectedPose))
-            {
-                _currentPose = string.Empty;
-                _poseHoldTimer = 0f;
-                return;
-            }
+            rightController.TryGetFeatureValue(CommonUsages.primaryButton, out currentA);
+            rightController.TryGetFeatureValue(CommonUsages.secondaryButton, out currentB);
+            leftController.TryGetFeatureValue(CommonUsages.primaryButton, out currentX);
+            leftController.TryGetFeatureValue(CommonUsages.secondaryButton, out currentY);
 
-            if (detectedPose == _currentPose)
-            {
-                _poseHoldTimer += Time.deltaTime;
-            }
-            else
-            {
-                _currentPose = detectedPose;
-                _poseHoldTimer = 0f;
-            }
+            if (currentA && !_prevA) ProcessGestureToken('F');
+            if (currentB && !_prevB) ProcessGestureToken('P');
+            if (currentX && !_prevX) ProcessGestureToken('O');
+            if (currentY && !_prevY) ProcessGestureToken('S');
 
-            if (_poseHoldTimer < poseHoldDuration) return;
-
-            // Avoid re-firing the same held pose
-            if (_currentPose == _lastFiredPose) return;
-
-            ProcessGestureToken(_currentPose[0]);
-            _lastFiredPose = _currentPose;
-            _poseHoldTimer = 0f;
+            _prevA = currentA;
+            _prevB = currentB;
+            _prevX = currentX;
+            _prevY = currentY;
         }
 
         public void ProcessGestureToken(char token)
@@ -113,61 +89,9 @@ namespace VRArcaneArena.Managers
             onReachableSpellsUpdated.Invoke(spellTrie.GetReachableSpells());
         }
 
-        /// <summary>
-        /// Detects the current hand pose using XR Hands joint positions.
-        /// Uses right hand. Returns "F", "P", "O", "S", or empty string.
-        /// </summary>
-        private string DetectCurrentPose()
-        {
-            var hand = _handSubsystem.rightHand;
-            if (!hand.isTracked) return string.Empty;
-
-            bool indexExtended  = IsFingerExtended(hand, XRHandJointID.IndexTip,  XRHandJointID.IndexProximal);
-            bool middleExtended = IsFingerExtended(hand, XRHandJointID.MiddleTip, XRHandJointID.MiddleProximal);
-            bool ringExtended   = IsFingerExtended(hand, XRHandJointID.RingTip,   XRHandJointID.RingProximal);
-            bool pinkyExtended  = IsFingerExtended(hand, XRHandJointID.LittleTip, XRHandJointID.LittleProximal);
-            bool thumbExtended  = IsFingerExtended(hand, XRHandJointID.ThumbTip,  XRHandJointID.ThumbProximal);
-
-            int extendedCount = (indexExtended ? 1 : 0) + (middleExtended ? 1 : 0)
-                              + (ringExtended  ? 1 : 0) + (pinkyExtended  ? 1 : 0);
-
-            // Fist — all fingers curled
-            if (extendedCount == 0) return "F";
-
-            // Point — only index extended
-            if (indexExtended && !middleExtended && !ringExtended && !pinkyExtended) return "P";
-
-            // Spread — all fingers + thumb extended
-            if (extendedCount >= 4 && thumbExtended) return "S";
-
-            // Open Palm — 3-4 fingers extended
-            if (extendedCount >= 3) return "O";
-
-            return string.Empty;
-        }
-
-        /// <summary>
-        /// Compares tip-to-wrist distance vs proximal-to-wrist distance.
-        /// Tip further from wrist than proximal = finger is extended.
-        /// </summary>
-        private bool IsFingerExtended(XRHand hand, XRHandJointID tipID, XRHandJointID proximalID)
-        {
-            if (!hand.GetJoint(XRHandJointID.Wrist).TryGetPose(out Pose wristPose))   return false;
-            if (!hand.GetJoint(tipID).TryGetPose(out Pose tipPose))                   return false;
-            if (!hand.GetJoint(proximalID).TryGetPose(out Pose proxPose))             return false;
-
-            float tipDist  = Vector3.Distance(tipPose.position,  wristPose.position);
-            float proxDist = Vector3.Distance(proxPose.position, wristPose.position);
-
-            return tipDist > proxDist * 1.2f;
-        }
-
         public void ResetGesture()
         {
             spellTrie.Reset();
-            _lastFiredPose = string.Empty;
-            _currentPose = string.Empty;
-            _poseHoldTimer = 0f;
         }
 
         public List<string> GetReachableSpells()
