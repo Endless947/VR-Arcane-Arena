@@ -16,12 +16,12 @@ Built for:
 
 ## The Four Data Structures
 
-| Game Mechanic | Data Structure | Syllabus Unit | Complexity Highlight |
-|---|---|---|---|
-| 3D arena spatial partitioning + AoE hit detection | **Octree** | Unit 5 | O(log n + k) sphere queries |
-| Spell casting via hand gesture sequences | **Trie** | Unit 3 | O(L) spell recognition |
-| Enemy threat scoring + auto-targeting | **Fibonacci Heap** | Unit 2 | O(1) amortized decrease-key |
-| Spell cooldown queue management | **Skip List** | Unit 4 | O(log n) insertion |
+| Game Mechanic | Data Structure | Complexity Highlight |
+|---|---|---|
+| 3D arena spatial partitioning + AoE hit detection | **Octree** |  O(log n + k) sphere queries |
+| Spell casting via hand gesture sequences | **Trie** |  | O(L) spell recognition |
+| Enemy threat scoring + auto-targeting | **Fibonacci Heap** |  O(1) amortized decrease-key |
+| Spell cooldown queue management | **Skip List** |  O(log n) insertion |
 
 ---
 
