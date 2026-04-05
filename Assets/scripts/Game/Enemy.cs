@@ -187,6 +187,8 @@ namespace VRArcaneArena.Game
         {
             if (PlayerHealth.Instance != null)
                 PlayerHealth.Instance.TakeDamage(_stats.damage);
+            if (GameManager.Instance != null)
+                GameManager.Instance.OnEnemyKilled();
             UnregisterFromManagers();
             Destroy(gameObject);
         }

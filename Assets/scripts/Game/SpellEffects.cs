@@ -64,12 +64,9 @@ namespace VRArcaneArena.Game
             main.startColor = color;
 
             var renderer = effectObject.GetComponent<ParticleSystemRenderer>();
-            var shader = Shader.Find("Particles/Standard Unlit");
-            if (shader == null)
-            {
-                shader = Shader.Find("Legacy Shaders/Particles/Additive");
-            }
-            renderer.material = new Material(shader);
+            var mat = new Material(Shader.Find("Unlit/Color"));
+            mat.color = color;
+            renderer.material = mat;
 
             var emission = particleSystem.emission;
             emission.enabled = false;

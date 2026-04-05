@@ -125,9 +125,10 @@ namespace VRArcaneArena.Game
                 return;
             }
 
-            if (CooldownTracker.Instance != null && CooldownTracker.Instance.IsOnCooldown(spellName))
+            var tracker = CooldownTracker.Instance ?? FindObjectOfType<CooldownTracker>();
+            if (tracker != null && tracker.IsOnCooldown(spellName))
             {
-                Debug.Log("spell on cooldown");
+                Debug.Log("spell on cooldown: " + spellName);
                 return;
             }
 
@@ -161,9 +162,13 @@ namespace VRArcaneArena.Game
                     return;
             }
 
-            if (CooldownTracker.Instance != null && _spellCooldowns.TryGetValue(spellName, out var cooldownDuration))
+            if (_spellCooldowns.TryGetValue(spellName, out var cooldownDuration))
             {
-                CooldownTracker.Instance.AddCooldown(spellName, spellName, cooldownDuration);
+                var cooldownTracker = CooldownTracker.Instance ?? FindObjectOfType<CooldownTracker>();
+                if (cooldownTracker != null)
+                    cooldownTracker.AddCooldown(spellName, spellName, cooldownDuration);
+                else
+                    Debug.LogWarning("CooldownTracker not found for spell: " + spellName);
             }
         }
 

@@ -220,11 +220,13 @@ namespace VRArcaneArena.Managers
                 var go = new GameObject("OctreeLine");
                 go.transform.SetParent(_lineContainer.transform);
                 var lr = go.AddComponent<LineRenderer>();
-                lr.material = new Material(Shader.Find("Legacy Shaders/Particles/Additive"));
+                var mat = new Material(Shader.Find("Unlit/Color"));
+                mat.color = lineColor;
+                lr.material = mat;
                 lr.startColor = lineColor;
                 lr.endColor = lineColor;
-                lr.startWidth = 0.06f;
-                lr.endWidth = 0.06f;
+                lr.startWidth = 0.08f;
+                lr.endWidth = 0.08f;
                 lr.positionCount = 2;
                 lr.SetPosition(0, corners[edge[0]]);
                 lr.SetPosition(1, corners[edge[1]]);

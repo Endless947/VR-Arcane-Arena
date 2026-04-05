@@ -39,7 +39,9 @@ namespace VRArcaneArena.Game
             emission.rateOverTime = 40f;
 
             var renderer = gameObject.GetComponent<ParticleSystemRenderer>();
-            renderer.material = new Material(Shader.Find("Legacy Shaders/Particles/Additive"));
+            var mat = new Material(Shader.Find("Unlit/Color"));
+            mat.color = _color;
+            renderer.material = mat;
 
             _ps.Play();
         }

@@ -130,9 +130,9 @@ namespace VRArcaneArena.UI
             var cam = Camera.main;
             panelObject.transform.SetParent(cam.transform, false);
 
-            panelObject.transform.localPosition = new Vector3(-0.55f, -0.15f, 1.2f);
+            panelObject.transform.localPosition = new Vector3(-0.42f, -0.05f, 1.4f);
             panelObject.transform.localRotation = Quaternion.identity;
-            panelObject.transform.localScale = new Vector3(0.001f, 0.001f, 0.001f);
+            panelObject.transform.localScale = new Vector3(0.0025f, 0.0025f, 0.0025f);
 
             _canvas = panelObject.GetComponent<Canvas>();
             _canvas.renderMode = RenderMode.WorldSpace;
@@ -220,7 +220,7 @@ namespace VRArcaneArena.UI
             rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
             rectTransform.pivot = new Vector2(0.5f, 0.5f);
             rectTransform.anchoredPosition = position;
-            rectTransform.sizeDelta = new Vector2(40f, 24f);
+            rectTransform.sizeDelta = new Vector2(55f, 30f);
 
             var image = nodeObject.GetComponent<Image>();
             image.type = Image.Type.Simple;
@@ -238,7 +238,7 @@ namespace VRArcaneArena.UI
 
             var label = labelObj.GetComponent<UnityEngine.UI.Text>();
             label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            label.fontSize = 11;
+            label.fontSize = 16;
             label.alignment = TextAnchor.MiddleCenter;
             label.raycastTarget = false;
             label.color = Color.black;
@@ -260,7 +260,7 @@ namespace VRArcaneArena.UI
 
                 var spellLabel = spellLabelObj.GetComponent<UnityEngine.UI.Text>();
                 spellLabel.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-                spellLabel.fontSize = 9;
+                spellLabel.fontSize = 14;
                 spellLabel.alignment = TextAnchor.MiddleCenter;
                 spellLabel.raycastTarget = false;
                 spellLabel.color = new Color(1f, 0.84f, 0f);
