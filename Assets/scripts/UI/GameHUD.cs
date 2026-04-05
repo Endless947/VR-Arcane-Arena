@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.XR;
 using VRArcaneArena.Game;
 
 namespace VRArcaneArena.UI
@@ -8,6 +10,9 @@ namespace VRArcaneArena.UI
     {
         private const float HealthBarWidth = 300f;
         private const float HealthBarHeight = 24f;
+        private const float HoldDurationSeconds = 5f;
+        private const KeyCode LeftTestKey = KeyCode.L;
+        private const KeyCode RightTestKey = KeyCode.K;
 
         private Text _waveLabel;
         private Text _scoreLabel;
@@ -16,6 +21,12 @@ namespace VRArcaneArena.UI
         private GameObject _youWinPanel;
         private Text _gameOverScoreText;
         private Text _youWinScoreText;
+        private GameObject _startButtonPanel;
+        private Text _startButtonHintText;
+        private float _dualTriggerHoldTimer;
+
+        private readonly List<InputDevice> _leftDevices = new List<InputDevice>();
+        private readonly List<InputDevice> _rightDevices = new List<InputDevice>();
 
         private void Start()
         {
@@ -154,6 +165,20 @@ namespace VRArcaneArena.UI
                 new Vector2(0.5f, 0.5f),
                 new Vector2(0f, -30f),
                 new Vector2(700f, 70f));
+
+            _startButtonPanel = CreateActionButtonPanel(canvasObject.transform, "StartButtonPanel", "START GAME");
+            _startButtonHintText = CreateText(
+                "StartButtonHint",
+                _startButtonPanel.transform,
+                "Hold both front triggers (or L + K) for 5.0s",
+                TextAnchor.MiddleCenter,
+                26,
+                Color.white,
+                font,
+                new Vector2(0.5f, 0.5f),
+                new Vector2(0.5f, 0.5f),
+                new Vector2(0f, -50f),
+                new Vector2(860f, 60f));
         }
 
         private void Update()
@@ -163,6 +188,21 @@ namespace VRArcaneArena.UI
             {
                 _waveLabel.text = "Wave " + gameManager.CurrentWave + " / " + gameManager.totalWaves;
                 _scoreLabel.text = "Score: " + gameManager.CurrentPoints;
+
+                bool waitingForStart = !gameManager.HasGameStarted && !gameManager.IsGameOver && !gameManager.IsGameWon;
+                if (_startButtonPanel != null)
+                {
+                    _startButtonPanel.SetActive(waitingForStart);
+                }
+
+                if (waitingForStart)
+                {
+                    HandleStartHold();
+                }
+                else
+                {
+                    _dualTriggerHoldTimer = 0f;
+                }
 
                 if (gameManager.IsGameOver)
                 {
@@ -186,6 +226,71 @@ namespace VRArcaneArena.UI
             var size = _healthFillRect.sizeDelta;
             size.x = HealthBarWidth * healthPercent;
             _healthFillRect.sizeDelta = size;
+        }
+
+        private void HandleStartHold()
+        {
+            bool areBothFrontTriggersPressed = IsTriggerPressed(XRNode.LeftHand, _leftDevices) &&
+                                               IsTriggerPressed(XRNode.RightHand, _rightDevices);
+            bool areBothTestKeysPressed = Input.GetKey(LeftTestKey) && Input.GetKey(RightTestKey);
+            bool isHoldInputPressed = areBothFrontTriggersPressed || areBothTestKeysPressed;
+
+            if (isHoldInputPressed)
+            {
+                _dualTriggerHoldTimer += Time.deltaTime;
+            }
+            else
+            {
+                _dualTriggerHoldTimer = 0f;
+            }
+
+            float secondsLeft = Mathf.Max(0f, HoldDurationSeconds - _dualTriggerHoldTimer);
+            if (_startButtonHintText != null)
+            {
+                _startButtonHintText.text = "Hold both front triggers (or L + K) for " + secondsLeft.ToString("0.0") + "s";
+            }
+
+            if (_dualTriggerHoldTimer < HoldDurationSeconds)
+            {
+                return;
+            }
+
+            _dualTriggerHoldTimer = 0f;
+            var gameManager = GameManager.Instance;
+            if (gameManager != null)
+            {
+                gameManager.StartGame();
+            }
+        }
+
+        private static bool IsTriggerPressed(XRNode handNode, List<InputDevice> cachedDevices)
+        {
+            if (cachedDevices.Count == 0)
+            {
+                InputDevices.GetDevicesAtXRNode(handNode, cachedDevices);
+            }
+
+            for (int i = 0; i < cachedDevices.Count; i++)
+            {
+                var device = cachedDevices[i];
+                if (!device.isValid)
+                {
+                    continue;
+                }
+
+                if (device.TryGetFeatureValue(CommonUsages.triggerButton, out bool triggerButtonPressed) && triggerButtonPressed)
+                {
+                    return true;
+                }
+
+                if (device.TryGetFeatureValue(CommonUsages.trigger, out float triggerValue) && triggerValue > 0.85f)
+                {
+                    return true;
+                }
+            }
+
+            cachedDevices.Clear();
+            return false;
         }
 
         private static Text CreateText(
@@ -257,6 +362,33 @@ namespace VRArcaneArena.UI
 
             var image = panel.GetComponent<Image>();
             image.color = new Color(0f, 0f, 0f, 0.65f);
+
+            return panel;
+        }
+
+        private static GameObject CreateActionButtonPanel(Transform parent, string name, string title)
+        {
+            var panel = CreateCenterPanel(parent, name);
+            var panelRect = panel.GetComponent<RectTransform>();
+            panelRect.anchoredPosition = new Vector2(0f, -130f);
+            panelRect.sizeDelta = new Vector2(980f, 220f);
+
+            var backgroundImage = panel.GetComponent<Image>();
+            backgroundImage.color = new Color(0f, 0.2f, 0.4f, 0.85f);
+
+            var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            CreateText(
+                name + "Title",
+                panel.transform,
+                title,
+                TextAnchor.MiddleCenter,
+                42,
+                new Color(0.98f, 0.94f, 0.65f, 1f),
+                font,
+                new Vector2(0.5f, 0.5f),
+                new Vector2(0.5f, 0.5f),
+                new Vector2(0f, 28f),
+                new Vector2(860f, 80f));
 
             return panel;
         }

@@ -16,12 +16,14 @@ namespace VRArcaneArena.Game
         private int _currentWave = 0;
         private int _currentPoints = 0;
         private int _enemiesAlive = 0;
+        private bool _gameStarted = false;
         private bool _gameOver = false;
         private bool _gameWon = false;
         private EnemySpawner _spawner;
 
         public int CurrentWave => _currentWave;
         public int CurrentPoints => _currentPoints;
+        public bool HasGameStarted => _gameStarted;
         public bool IsGameOver => _gameOver;
         public bool IsGameWon => _gameWon;
 
@@ -33,6 +35,16 @@ namespace VRArcaneArena.Game
         private void Start()
         {
             _spawner = FindObjectOfType<EnemySpawner>();
+        }
+
+        public void StartGame()
+        {
+            if (_gameStarted || _gameOver || _gameWon)
+            {
+                return;
+            }
+
+            _gameStarted = true;
             StartCoroutine(StartNextWave());
         }
 
@@ -55,7 +67,7 @@ namespace VRArcaneArena.Game
 
         public void OnEnemyKilled()
         {
-            if (_gameOver) return;
+            if (!_gameStarted || _gameOver || _gameWon) return;
 
             _currentPoints += pointsPerKill;
             _enemiesAlive--;
