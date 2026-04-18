@@ -36,6 +36,7 @@ desktop.ini
 *.mdb
 *.opendb
 *.VC.db
+.vscode/
 
 # Crash reports
 sysinfo.txt
@@ -59,3 +60,4 @@ node_modules/
 # Packages — don't ignore, Unity needs these tracked
 !/[Pp]ackages/manifest.json
 !/[Pp]ackages/packages-lock.json
+
